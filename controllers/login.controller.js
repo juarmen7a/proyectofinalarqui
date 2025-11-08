@@ -1,8 +1,8 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const Login = require('../models/login.model');        // tabla: login (sesiones)
-const usuarios = require('../models/usuarios.model');  // tabla: usuarios
+const Login = require('../models/login.model');
+const usuarios = require('../models/usuarios.model');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
@@ -12,7 +12,6 @@ const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 const now = () => new Date();
 const inMs = (ms) => new Date(Date.now() + ms);
 
-// ==================== OBTENER TODAS LAS SESIONES ====================
 exports.getSesiones = async (_req, res) => {
   try {
     const sesiones = await Login.findAll();
@@ -22,7 +21,6 @@ exports.getSesiones = async (_req, res) => {
   }
 };
 
-// ==================== OBTENER SESIÓN POR ID ====================
 exports.getSesionById = async (req, res) => {
   try {
     const sesion = await Login.findByPk(req.params.id);
@@ -33,7 +31,6 @@ exports.getSesionById = async (req, res) => {
   }
 };
 
-// ==================== LOGIN ====================
 exports.createSesion = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -93,7 +90,6 @@ exports.createSesion = async (req, res) => {
   }
 };
 
-// ==================== LOGOUT ====================
 exports.logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -109,7 +105,6 @@ exports.logout = async (req, res) => {
   }
 };
 
-// ==================== VERIFICAR TOKEN ====================
 exports.verificarToken = async (req, res) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return res.status(400).json({ message: 'Debe enviar un token válido' });
