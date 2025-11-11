@@ -15,9 +15,7 @@ const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 const now = () => new Date();
 const inMs = (ms) => new Date(Date.now() + ms);
 
-// ======================
-//  GET - Todas las sesiones
-// ======================
+//Obtener la lista de sesiones
 exports.getSesiones = async (_req, res) => {
   try {
     const sesiones = await Login.findAll();
@@ -27,9 +25,7 @@ exports.getSesiones = async (_req, res) => {
   }
 };
 
-// ======================
-//  GET - Sesión por ID
-// ======================
+//Obtener una sesión por ID
 exports.getSesionById = async (req, res) => {
   try {
     const sesion = await Login.findByPk(req.params.id);
@@ -40,9 +36,7 @@ exports.getSesionById = async (req, res) => {
   }
 };
 
-// ======================
-//  POST - Crear sesión (login)
-// ======================
+//Crear una nueva sesión (login)
 exports.createSesion = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -50,13 +44,13 @@ exports.createSesion = async (req, res) => {
       return res.status(400).json({ message: 'Debe ingresar email y contraseña' });
     }
 
-    // Buscar usuario por correo
+   // Buscar usuario por correo
     const usuario = await usuarios.findOne({ where: { correo: email } });
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar si ya hay una sesión activa
+    // Verificar si ya hay una sesión activa para el usuario
     const sesionActiva = await Login.findOne({ where: { usuario_id: usuario.id } });
     if (sesionActiva) {
       return res.status(409).json({
@@ -101,9 +95,7 @@ exports.createSesion = async (req, res) => {
   }
 };
 
-// ======================
-//  PUT - Cambiar contraseña del usuario
-// ======================
+// Actualiza la contraseña de un usuario 
 exports.updatePassword = async (req, res) => {
   try {
     const { id } = req.params; // id de usuario
@@ -130,9 +122,7 @@ exports.updatePassword = async (req, res) => {
   }
 };
 
-// ======================
-//  DELETE - Eliminar sesión por ID (admin)
-// ======================
+// Elimina una sesión (logout)
 exports.deleteSesion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,16 +130,14 @@ exports.deleteSesion = async (req, res) => {
     if (!sesion) return res.status(404).json({ message: 'Sesión no encontrada' });
 
     await sesion.destroy();
-    return res.status(200).json({ message: 'Sesión eliminada correctamente' });
+    return res.status(200).json({ message: `El Usuario ${usuario.nombre_completo}, salio exitosamente`, });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error al eliminar la sesión' });
   }
 };
 
-// ======================
-//  GET - Verificar validez del token
-// ======================
+// Verifica la validez de un token JWT
 exports.verificarToken = async (req, res) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return res.status(400).json({ message: 'Debe enviar un token válido' });
