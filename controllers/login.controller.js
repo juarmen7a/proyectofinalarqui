@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const Login = require('../models/login.model');
 const usuarios = require('../models/usuarios.model');
 
-//  Cargar variables de entorno
+// Cargar variables de entorno
 require('dotenv').config();
 
 // Configuración JWT
@@ -15,7 +15,7 @@ const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 const now = () => new Date();
 const inMs = (ms) => new Date(Date.now() + ms);
 
-//Obtener la lista de sesiones
+// Obtener la lista de sesiones
 exports.getSesiones = async (_req, res) => {
   try {
     const sesiones = await Login.findAll();
@@ -25,7 +25,7 @@ exports.getSesiones = async (_req, res) => {
   }
 };
 
-//Obtener una sesión por ID
+// Obtener una sesión por ID
 exports.getSesionById = async (req, res) => {
   try {
     const sesion = await Login.findByPk(req.params.id);
@@ -36,7 +36,7 @@ exports.getSesionById = async (req, res) => {
   }
 };
 
-//Crear una nueva sesión (login)
+// Crear una nueva sesión (login)
 exports.createSesion = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -44,13 +44,13 @@ exports.createSesion = async (req, res) => {
       return res.status(400).json({ message: 'Debe ingresar email y contraseña' });
     }
 
-   // Buscar usuario por correo
+    // Buscar usuario por correo
     const usuario = await usuarios.findOne({ where: { correo: email } });
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar si ya hay una sesión activa para el usuario
+    // Verificar si ya hay una sesión activa
     const sesionActiva = await Login.findOne({ where: { usuario_id: usuario.id } });
     if (sesionActiva) {
       return res.status(409).json({
@@ -95,10 +95,10 @@ exports.createSesion = async (req, res) => {
   }
 };
 
-// Actualiza la contraseña de un usuario 
+// Actualiza la contraseña de un usuario
 exports.updatePassword = async (req, res) => {
   try {
-    const { id } = req.params; // id de usuario
+    const { id } = req.params;
     const { password_actual, password_nueva } = req.body;
 
     if (!password_actual || !password_nueva) {
@@ -125,12 +125,19 @@ exports.updatePassword = async (req, res) => {
 // Elimina una sesión (logout)
 exports.deleteSesion = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID de la sesión (tabla login)
     const sesion = await Login.findByPk(id);
     if (!sesion) return res.status(404).json({ message: 'Sesión no encontrada' });
 
+    // Buscar usuario para mensaje personalizado
+    const usuario = await usuarios.findByPk(sesion.usuario_id);
+
     await sesion.destroy();
-    return res.status(200).json({ message: `El Usuario ${usuario.nombre_completo}, salio exitosamente`, });
+
+    const nombreUsuario = usuario ? usuario.nombre_completo : `ID ${sesion.usuario_id}`;
+    return res.status(200).json({
+      message: `El usuario ${nombreUsuario} salió exitosamente`
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error al eliminar la sesión' });
