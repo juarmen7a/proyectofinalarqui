@@ -1,13 +1,13 @@
-//routes/login.routes.js
 const express = require('express');
 const router = express.Router();
-const login = require('../controllers/login.controller');
+const loginController = require('../controllers/login.controller');
 
-// Rutas para la gestión de login y sesiones
-router.post('/login', login.createSesion);
-router.get('/sesiones', login.getSesiones);
-router.get('/sesiones/:id', login.getSesionById);
-router.delete('/logout', login.logout);
-router.get('/verificar', login.verificarToken);
+// Rutas con prefijo /login
+router.get('/login/verificar/token', loginController.verificarToken);
+router.get('/login', loginController.getSesiones);
+router.get('/login/:id', loginController.getSesionById);
+router.post('/login', loginController.createSesion);
+router.put('/login/:id', loginController.updatePassword);
+router.delete('/login/:id', loginController.deleteSesion);
 
 module.exports = router;

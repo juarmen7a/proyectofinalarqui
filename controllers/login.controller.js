@@ -15,7 +15,9 @@ const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 const now = () => new Date();
 const inMs = (ms) => new Date(Date.now() + ms);
 
-// Obtiene todas las sesiones (login)
+// ======================
+//  GET - Todas las sesiones
+// ======================
 exports.getSesiones = async (_req, res) => {
   try {
     const sesiones = await Login.findAll();
@@ -25,7 +27,9 @@ exports.getSesiones = async (_req, res) => {
   }
 };
 
-// Obtiene una sesión por ID
+// ======================
+//  GET - Sesión por ID
+// ======================
 exports.getSesionById = async (req, res) => {
   try {
     const sesion = await Login.findByPk(req.params.id);
@@ -36,7 +40,9 @@ exports.getSesionById = async (req, res) => {
   }
 };
 
-// Crea una nueva sesión (login)
+// ======================
+//  POST - Crear sesión (login)
+// ======================
 exports.createSesion = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -50,7 +56,7 @@ exports.createSesion = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-   // Verificar si ya hay una sesión activa para el usuario
+    // Verificar si ya hay una sesión activa
     const sesionActiva = await Login.findOne({ where: { usuario_id: usuario.id } });
     if (sesionActiva) {
       return res.status(409).json({
@@ -63,7 +69,7 @@ exports.createSesion = async (req, res) => {
       return res.status(403).json({ message: 'Usuario inactivo' });
     }
 
-    // Verificar contraseña (en un entorno real, usar hashing)
+    // Verificar contraseña (texto plano)
     if (String(usuario.contrasena) !== String(password)) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
@@ -72,7 +78,7 @@ exports.createSesion = async (req, res) => {
     const payload = { id: usuario.id, nombre: usuario.nombre_completo, email: usuario.correo };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-   // Crear registro de sesión
+    // Crear registro de sesión
     const sesion = await Login.create({
       usuario_id: usuario.id,
       token_hash: token,
@@ -90,29 +96,60 @@ exports.createSesion = async (req, res) => {
       token,
       sesion_id: sesion.id
     });
-
   } catch (error) {
     res.status(500).json({ error, message: 'Error al iniciar sesión' });
   }
 };
 
-// Cierra una sesión (logout)
-exports.logout = async (req, res) => {
+// ======================
+//  PUT - Cambiar contraseña del usuario
+// ======================
+exports.updatePassword = async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
-    if (!token) return res.status(400).json({ message: 'Debe enviar el token en Authorization: Bearer <token>' });
+    const { id } = req.params; // id de usuario
+    const { password_actual, password_nueva } = req.body;
 
-    const sesion = await Login.findOne({ where: { token_hash: token } });
-    if (!sesion) return res.status(404).json({ message: 'Sesión no encontrada o ya cerrada' });
+    if (!password_actual || !password_nueva) {
+      return res.status(400).json({ message: 'Debe ingresar la contraseña actual y la nueva' });
+    }
 
-    await sesion.destroy();
-    res.status(200).json({ message: 'Sesión cerrada correctamente' });
+    const usuario = await usuarios.findByPk(id);
+    if (!usuario) return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (usuario.activo === 0) return res.status(403).json({ message: 'Usuario inactivo' });
+
+    // Validar contraseña actual
+    if (String(usuario.contrasena) !== String(password_actual)) {
+      return res.status(401).json({ message: 'Contraseña actual incorrecta' });
+    }
+
+    await usuario.update({ contrasena: String(password_nueva) });
+    return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
   } catch (error) {
-    res.status(500).json({ error, message: 'Error al cerrar sesión' });
+    console.error(error);
+    return res.status(500).json({ message: 'Error al actualizar la contraseña' });
   }
 };
 
-// Verifica validez del token
+// ======================
+//  DELETE - Eliminar sesión por ID (admin)
+// ======================
+exports.deleteSesion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const sesion = await Login.findByPk(id);
+    if (!sesion) return res.status(404).json({ message: 'Sesión no encontrada' });
+
+    await sesion.destroy();
+    return res.status(200).json({ message: 'Sesión eliminada correctamente' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error al eliminar la sesión' });
+  }
+};
+
+// ======================
+//  GET - Verificar validez del token
+// ======================
 exports.verificarToken = async (req, res) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return res.status(400).json({ message: 'Debe enviar un token válido' });
