@@ -1,14 +1,14 @@
-'use strict';
-
+// Controlador para el modelo Compras
 const Compra = require('../models/compras.model');
 
-// Modelos opcionales para validar FKs
+// Modelos relacionados 
 let Almacen = null, Producto = null, Usuario = null, Proveedor = null;
 try { Almacen   = require('../models/almacenes.model'); }  catch (_) {}
 try { Producto  = require('../models/productos.model'); }  catch (_) {}
 try { Usuario   = require('../models/usuarios.model'); }   catch (_) {}
 try { Proveedor = require('../models/proveedores.model'); } catch (_) {}
 
+// Busca todas las compras
 exports.getCompras = async (_req, res) => {
   try {
     const rows = await Compra.findAll();
@@ -18,6 +18,7 @@ exports.getCompras = async (_req, res) => {
   }
 };
 
+// Busca una compra por ID
 exports.getCompraById = async (req, res) => {
   try {
     const row = await Compra.findByPk(req.params.id);
@@ -28,15 +29,17 @@ exports.getCompraById = async (req, res) => {
   }
 };
 
+// Crea una nueva compra
 exports.createCompra = async (req, res) => {
   try {
+    // Extraer y validar campos obligatorios
     const {
       almacen_id, producto_id, usuario_id, proveedor_id,
       documento_tipo, documento_numero,
       fecha, cantidad, precio_unitario,
       impuesto = 0, estado = 'REGISTRADO'
     } = req.body;
-
+    // Validaciones
     if (!almacen_id || !producto_id || !usuario_id || !proveedor_id ||
         !documento_tipo || !documento_numero || !fecha ||
         cantidad == null || precio_unitario == null) {
@@ -44,12 +47,13 @@ exports.createCompra = async (req, res) => {
         message: 'almacen_id, producto_id, usuario_id, proveedor_id, documento_tipo, documento_numero, fecha, cantidad y precio_unitario son requeridos'
       });
     }
-
+    // Verificar existencia de claves foráneas
     if (Almacen)   { const a = await Almacen.findByPk(almacen_id);   if (!a) return res.status(404).json({ message: `Almacén ${almacen_id} no existe` }); }
     if (Producto)  { const p = await Producto.findByPk(producto_id); if (!p) return res.status(404).json({ message: `Producto ${producto_id} no existe` }); }
     if (Usuario)   { const u = await Usuario.findByPk(usuario_id);   if (!u) return res.status(404).json({ message: `Usuario ${usuario_id} no existe` }); }
     if (Proveedor) { const pr= await Proveedor.findByPk(proveedor_id);if (!pr) return res.status(404).json({ message: `Proveedor ${proveedor_id} no existe` }); }
-
+    
+    // Verificar duplicado 
     const dup = await Compra.findOne({ where: { proveedor_id, documento_tipo, documento_numero } });
     if (dup) {
       return res.status(409).json({
@@ -57,7 +61,7 @@ exports.createCompra = async (req, res) => {
       });
     }
 
-    // No enviar subtotal/total (los calcula MySQL)
+    // Crear compra
     const row = await Compra.create({
       almacen_id, producto_id, usuario_id, proveedor_id,
       documento_tipo, documento_numero,
@@ -67,6 +71,7 @@ exports.createCompra = async (req, res) => {
 
     res.status(201).json({ message: 'Compra creada correctamente', data: row });
   } catch (error) {
+    // Manejo de error para índice único
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(409).json({ message: 'Compra duplicada (documento ya registrado)' });
     }
@@ -74,6 +79,7 @@ exports.createCompra = async (req, res) => {
   }
 };
 
+// Actualiza una compra existente
 exports.updateCompra = async (req, res) => {
   try {
     const row = await Compra.findByPk(req.params.id);
@@ -110,8 +116,7 @@ exports.updateCompra = async (req, res) => {
     if (impuesto !== undefined)         row.impuesto         = impuesto;
     if (estado !== undefined)           row.estado           = estado;
 
-    // No tocar subtotal/total (MySQL los recalcula si hay columnas generadas)
-    // Validar duplicado según doc+proveedor actual
+  // Verificar duplicado
     const chk = await Compra.findOne({
       where: {
         proveedor_id: row.proveedor_id,
@@ -132,6 +137,7 @@ exports.updateCompra = async (req, res) => {
   }
 };
 
+// Elimina una compra
 exports.deleteCompra = async (req, res) => {
   try {
     const row = await Compra.findByPk(req.params.id);

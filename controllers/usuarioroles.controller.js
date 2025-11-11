@@ -1,9 +1,9 @@
-'use strict';
-
+// controllers/usuarioroles.controller.js
 const UsuarioRol = require('../models/usuarioroles.model');
 const Usuario = require('../models/usuarios.model');
 const Rol = require('../models/roles.model');
 
+// Obtiene todos los usuario_roles
 exports.getUsuarioRoles = async (req, res) => {
   try {
     const rows = await UsuarioRol.findAll();
@@ -13,6 +13,7 @@ exports.getUsuarioRoles = async (req, res) => {
   }
 };
 
+// Obtiene un usuario_rol por ID
 exports.getUsuarioRolById = async (req, res) => {
   try {
     const row = await UsuarioRol.findByPk(req.params.id);
@@ -23,6 +24,7 @@ exports.getUsuarioRolById = async (req, res) => {
   }
 };
 
+// Crea un nuevo usuario_rol
 exports.createUsuarioRol = async (req, res) => {
   try {
     const { usuario_id, rol_id } = req.body;
@@ -58,6 +60,7 @@ exports.createUsuarioRol = async (req, res) => {
   }
 };
 
+// Actualiza un usuario_rol existente
 exports.updateUsuarioRol = async (req, res) => {
   try {
     const { id } = req.params;
@@ -91,6 +94,7 @@ exports.updateUsuarioRol = async (req, res) => {
   }
 };
 
+// Elimina un usuario_rol
 exports.deleteUsuarioRol = async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,7 +102,7 @@ exports.deleteUsuarioRol = async (req, res) => {
     if (!row) return res.status(404).json({ message: 'Registro usuario_rol no encontrado' });
 
     await row.destroy();
-    res.json({ message: 'usuario_rol eliminado', id });
+    res.json({ message: 'Usuario_rol eliminado', id });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar usuario_rol', error: error.message });
   }

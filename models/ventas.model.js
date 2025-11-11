@@ -1,7 +1,8 @@
-'use strict';
+//ventas.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Venta, para gestionar las ventas realizadas en las sucursales
 const Venta = db.define('ventas', {
   id: {
     type: DataTypes.INTEGER,

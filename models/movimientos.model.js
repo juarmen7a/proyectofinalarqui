@@ -1,12 +1,8 @@
-'use strict';
-
+//  models/movimientos.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
-/**
- * Tabla física: movimientos_inventario
- * tipo: 1 = ENTRADA, 2 = SALIDA
- */
+// Definición del modelo Movimiento, para registrar entradas y salidas de inventario
 const Movimiento = db.define('movimientos', {
   id:          { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   almacen_id:  { type: DataTypes.INTEGER, allowNull: false },
@@ -19,6 +15,7 @@ const Movimiento = db.define('movimientos', {
 }, {
   tableName: 'movimientos_inventario',
   timestamps: false,
+  // Índice para consultas frecuentes por almacen, producto y fecha
   indexes: [
     { fields: ['almacen_id', 'producto_id', 'fecha'] }
   ]

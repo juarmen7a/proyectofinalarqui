@@ -1,6 +1,8 @@
+// controllers/sucursales.controller.js
 const Sucursal = require('../models/sucursales.model');
 const Usuario  = require('../models/usuarios.model'); 
 
+// Obtiene todas las sucursales
 exports.getSucursales = async (req, res) => {
   try {
     const rows = await Sucursal.findAll();
@@ -10,6 +12,7 @@ exports.getSucursales = async (req, res) => {
   }
 };
 
+// Obtiene una sucursal por ID
 exports.getSucursalById = async (req, res) => {
   try {
     const row = await Sucursal.findByPk(req.params.id);
@@ -20,6 +23,7 @@ exports.getSucursalById = async (req, res) => {
   }
 };
 
+// Crea una nueva sucursal
 exports.createSucursal = async (req, res) => {
   try {
     const { empresa_id, nombre, codigo } = req.body;
@@ -30,6 +34,7 @@ exports.createSucursal = async (req, res) => {
   }
 };
 
+  // Actualiza una sucursal existente
 exports.updateSucursal = async (req, res) => {
   try {
     const row = await Sucursal.findByPk(req.params.id);
@@ -45,6 +50,7 @@ exports.updateSucursal = async (req, res) => {
   }
 };
 
+// Elimina una sucursal
 exports.deleteSucursal = async (req, res) => {
   try {
     const id = req.params.id;
@@ -54,22 +60,19 @@ exports.deleteSucursal = async (req, res) => {
       return res.status(404).json({ error: 'Sucursal no encontrada' });
     }
 
-    // ✔ Verificar si tiene usuarios asignados
+    // Verifica usuarios asignados antes de eliminar
     const usuariosAsignados = await Usuario.count({ where: { sucursal_id: id } });
 
     if (usuariosAsignados > 0) {
       return res.status(409).json({
-        message: `NO PUEDES BORRAR LA SUCURSAL "${sucursal.nombre}" PORQUE TIENE USUARIOS ASIGNADOS`,
+        message: `No puedes borrar la sucursal "${sucursal.nombre}" porque tiene usuarios asignados`,
         detalle: `Usuarios vinculados: ${usuariosAsignados}`
       });
     }
-
-    // ✔ Guardar el nombre antes de borrar
     const nombreSucursal = sucursal.nombre;
 
-    // ✔ Borrar
+    //Borra la sucursal
     await sucursal.destroy();
-
     return res.status(200).json({
       message: `Sucursal "${nombreSucursal}" eliminada correctamente`
     });

@@ -1,7 +1,9 @@
+//routes/empresas.routes.js
 const express = require('express');
 const router = express.Router();
 const empresas = require('../controllers/empresas.controller');
 
+// Rutas para la gestión de empresas
 router.get('/empresas', empresas.getEmpresas);
 router.get('/empresas/:id', empresas.getEmpresaById);
 router.post('/empresas', empresas.createEmpresa);

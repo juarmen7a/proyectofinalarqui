@@ -1,8 +1,8 @@
-'use strict';
-
+// controllers/roles.controller.js
 const Rol = require('../models/roles.model');
 const UsuarioRol = require('../models/usuarioroles.model');
 
+// Obtiene todos los roles
 exports.getRoles = async (req, res) => {
   try {
     const rows = await Rol.findAll();
@@ -12,6 +12,7 @@ exports.getRoles = async (req, res) => {
   }
 };
 
+// Obtiene un rol por ID
 exports.getRolById = async (req, res) => {
   try {
     const row = await Rol.findByPk(req.params.id);
@@ -22,6 +23,7 @@ exports.getRolById = async (req, res) => {
   }
 };
 
+// Crea un nuevo rol
 exports.createRol = async (req, res) => {
   try {
     const { nombre } = req.body;
@@ -32,6 +34,7 @@ exports.createRol = async (req, res) => {
   }
 };
 
+// Actualiza un rol existente
 exports.updateRol = async (req, res) => {
   try {
     const row = await Rol.findByPk(req.params.id);
@@ -47,6 +50,7 @@ exports.updateRol = async (req, res) => {
   }
 };
 
+// Elimina un rol
 exports.deleteRol = async (req, res) => {
   try {
     const { id } = req.params;
@@ -54,22 +58,14 @@ exports.deleteRol = async (req, res) => {
     const rol = await Rol.findByPk(id);
     if (!rol) return res.status(404).json({ message: 'Rol no encontrado' });
 
+    // Verifica usuarios asignados antes de eliminar
     const asignadosPrevios = await UsuarioRol.count({ where: { rol_id: id } });
-
-    // Si quieres bloquear cuando hay usuarios asignados, descomenta esto:
-    // if (asignadosPrevios > 0) {
-    //   return res.status(409).json({
-    //     message: `No se puede eliminar el rol "${rol.nombre}" porque tiene ${asignadosPrevios} usuario(s) asignado(s).`
-    //   });
-    // }
-
     const nombreRol = rol.nombre;
     await rol.destroy();
-
     const rolesRestantes = await Rol.count();
 
     return res.status(200).json({
-      message: `Rol "${nombreRol}" eliminado correctamente.`,
+      message: `Rol "${nombreRol}" Eliminado correctamente.`,
       usuarios_asignados_previos: asignadosPrevios,
       roles_restantes: rolesRestantes
     });

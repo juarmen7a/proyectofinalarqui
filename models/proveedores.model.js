@@ -1,8 +1,8 @@
-'use strict';
-
+//proveedores.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Proveedor
 const Proveedor = db.define('proveedores', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 

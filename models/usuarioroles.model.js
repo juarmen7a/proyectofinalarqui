@@ -1,6 +1,8 @@
+//usuarioroles.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo UsuarioRol, para gestionar la relación entre usuarios y roles
 const UsuarioRol = db.define('usuario_roles', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   usuario_id: { type: DataTypes.INTEGER, allowNull: false },

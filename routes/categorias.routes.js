@@ -1,7 +1,9 @@
+//routes/categorias.routes.js
 const express = require('express');
 const router = express.Router();
 const categorias = require('../controllers/categorias.controller');
 
+// Rutas para la gestión de categorías
 router.get('/categorias', categorias.getCategorias);
 router.get('/categorias/:id', categorias.getCategoriaById);
 router.post('/categorias', categorias.createCategoria);

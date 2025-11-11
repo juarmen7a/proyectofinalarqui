@@ -1,6 +1,8 @@
+// models/empresas.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Empresa, para gestionar las empresas del sistema
 const Empresa = db.define('Empresa', {
   nombre: {
     type: DataTypes.STRING(100),

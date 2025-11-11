@@ -1,14 +1,13 @@
-'use strict';
-
+// controllers/movimientos.controller.js
 const Movimiento = require('../models/movimientos.model');
 
-// Modelos opcionales para validar FKs y ajustar stock
+// Modelos opcionales
 let Almacen = null, Producto = null, Inventario = null;
 try { Almacen   = require('../models/almacenes.model'); }  catch (_) {}
 try { Producto  = require('../models/productos.model'); }   catch (_) {}
 try { Inventario= require('../models/inventario.model'); }  catch (_) {}
 
-// 1=ENTRADA, 2=SALIDA. Acepta texto también.
+// Convierte tipo a número estándar
 function parseTipo(v) {
   if (typeof v === 'number') return v;
   const map = { 'ENTRADA': 1, 'SALIDA': 2 };
@@ -37,6 +36,7 @@ async function addStock(almacen_id, producto_id, delta) {
   }
 }
 
+// Obtiene todos los movimientos
 exports.getMovimientos = async (_req, res) => {
   try {
     const rows = await Movimiento.findAll();
@@ -46,6 +46,7 @@ exports.getMovimientos = async (_req, res) => {
   }
 };
 
+// Obtiene un movimiento por ID
 exports.getMovimientoById = async (req, res) => {
   try {
     const row = await Movimiento.findByPk(req.params.id);
@@ -56,6 +57,7 @@ exports.getMovimientoById = async (req, res) => {
   }
 };
 
+// Crea un nuevo movimiento
 exports.createMovimiento = async (req, res) => {
   try {
     let { almacen_id, producto_id, fecha, tipo, cantidad, referencia, referencia_id } = req.body;
@@ -68,7 +70,7 @@ exports.createMovimiento = async (req, res) => {
     if (Almacen)  { const a = await Almacen.findByPk(almacen_id);  if (!a) return res.status(404).json({ message: `Almacén ${almacen_id} no existe` }); }
     if (Producto) { const p = await Producto.findByPk(producto_id); if (!p) return res.status(404).json({ message: `Producto ${producto_id} no existe` }); }
 
-    // control de stock para SALIDA
+    // verificar stock para salidas
     if (Inventario && tipo === 2) {
       const stock = await getStock(almacen_id, producto_id);
       if (stock < +cantidad) return res.status(409).json({ message: `Stock insuficiente: actual ${stock}, requerido ${cantidad}` });
@@ -95,6 +97,7 @@ exports.createMovimiento = async (req, res) => {
   }
 };
 
+// Actualiza un movimiento existente
 exports.updateMovimiento = async (req, res) => {
   try {
     const mov = await Movimiento.findByPk(req.params.id);
@@ -124,18 +127,19 @@ exports.updateMovimiento = async (req, res) => {
       const p = await Producto.findByPk(producto_id); if (!p) return res.status(404).json({ message: `Producto ${producto_id} no existe` });
     }
 
-    // calcular delta total (quitar lo viejo y aplicar lo nuevo)
+    // calcular ajustes de inventario
     const newSigned = signedQty(tipo, cantidad);
     const revertOld = -oldSigned;
 
-    // 1) revertir movimiento anterior en su clave vieja
+    // ajustar inventario:
+    // 1) revertir efecto del viejo movimiento  
     if (Inventario) {
       await addStock(oldKey.almacen_id, oldKey.producto_id, revertOld);
+
       // 2) aplicar nuevo sobre la clave nueva (puede ser diferente)
       if (tipo === 2) {
         const stock = await getStock(almacen_id, producto_id);
         if (stock < +cantidad) {
-          // deshacer revertOld
           await addStock(oldKey.almacen_id, oldKey.producto_id, -revertOld);
           return res.status(409).json({ message: `Stock insuficiente: actual ${stock}, requerido ${cantidad}` });
         }
@@ -143,7 +147,7 @@ exports.updateMovimiento = async (req, res) => {
       await addStock(almacen_id, producto_id, newSigned);
     }
 
-    // guardar cambios del movimiento
+   // actualizar movimiento
     mov.almacen_id = almacen_id;
     mov.producto_id = producto_id;
     mov.fecha = fecha;
@@ -159,6 +163,7 @@ exports.updateMovimiento = async (req, res) => {
   }
 };
 
+//  Elimina un movimiento
 exports.deleteMovimiento = async (req, res) => {
   try {
     const mov = await Movimiento.findByPk(req.params.id);

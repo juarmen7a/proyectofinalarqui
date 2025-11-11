@@ -1,14 +1,14 @@
-'use strict';
-
+// controllers/ventas.controller.js
 const Venta = require('../models/ventas.model');
-const DetalleVenta = require('../models/detalleventas.model'); // <- tu nombre de archivo para detalle
+const DetalleVenta = require('../models/detalleventas.model'); 
 let Sucursal = null, Usuario = null;
 try { Sucursal = require('../models/sucursales.model'); } catch {}
 try { Usuario  = require('../models/usuarios.model'); }  catch {}
 
-const ESTADOS_PERMITIDOS = ['1', '2', '3']; // 1=Registrado, 2=Procesado, 3=Cerrado
+// Estados permitidos (1=Registrado, 2=Procesado, 3=Cerrado)
+const ESTADOS_PERMITIDOS = ['1', '2', '3']; 
 
-// ------------------- GET /ventas -------------------
+// Obtiene todas las ventas
 exports.getVentas = async (_req, res) => {
   try {
     const ventas = await Venta.findAll();
@@ -18,7 +18,7 @@ exports.getVentas = async (_req, res) => {
   }
 };
 
-// ------------------- GET /ventas/:id -------------------
+// Obtiene una venta por ID 
 exports.getVentaById = async (req, res) => {
   try {
     const venta = await Venta.findByPk(req.params.id);
@@ -31,19 +31,19 @@ exports.getVentaById = async (req, res) => {
   }
 };
 
-// ------------------- POST /ventas -------------------
+// Crea una nueva venta
 exports.createVenta = async (req, res) => {
   try {
     const { sucursal_id, cajero_id, estado = '1', fecha, numero_orden } = req.body;
 
-    // Requeridos
+    // Validar campos requeridos
     if (!sucursal_id || !cajero_id || !fecha || !numero_orden) {
       return res.status(400).json({
         message: 'sucursal_id, cajero_id, fecha y numero_orden son requeridos.'
       });
     }
 
-    // Validar estado permitido
+    //  Validar estado
     if (!ESTADOS_PERMITIDOS.includes(String(estado))) {
       return res.status(400).json({
         message: `El tipo de estado "${estado}" no es válido.`,
@@ -51,7 +51,7 @@ exports.createVenta = async (req, res) => {
       });
     }
 
-    // Validar FKs si los modelos están disponibles
+    // Validar FKs
     if (Sucursal) {
       const s = await Sucursal.findByPk(sucursal_id);
       if (!s) return res.status(404).json({ message: `Sucursal ${sucursal_id} no existe.` });
@@ -61,7 +61,7 @@ exports.createVenta = async (req, res) => {
       if (!u) return res.status(404).json({ message: `Cajero ${cajero_id} no existe.` });
     }
 
-    // Duplicado por número de orden
+    // Evitar duplicado por numero_orden
     const duplicado = await Venta.findOne({ where: { numero_orden } });
     if (duplicado) {
       return res.status(409).json({ message: `Ya existe una venta con número de orden "${numero_orden}".` });
@@ -77,7 +77,7 @@ exports.createVenta = async (req, res) => {
   }
 };
 
-// ------------------- PUT /ventas/:id -------------------
+// Actualiza una venta existente
 exports.updateVenta = async (req, res) => {
   try {
     const venta = await Venta.findByPk(req.params.id);
@@ -85,7 +85,7 @@ exports.updateVenta = async (req, res) => {
 
     const { sucursal_id, cajero_id, estado, fecha, numero_orden } = req.body;
 
-    // Validar estado cuando venga en el body
+    // Validar estado si cambia
     if (estado !== undefined && !ESTADOS_PERMITIDOS.includes(String(estado))) {
       return res.status(400).json({
         message: `El tipo de estado "${estado}" no es válido.`,
@@ -93,7 +93,7 @@ exports.updateVenta = async (req, res) => {
       });
     }
 
-    // Validar FKs si cambian
+     // Validar FKs si cambian
     if (sucursal_id !== undefined && Sucursal) {
       const s = await Sucursal.findByPk(sucursal_id);
       if (!s) return res.status(404).json({ message: `Sucursal ${sucursal_id} no existe.` });
@@ -110,7 +110,7 @@ exports.updateVenta = async (req, res) => {
     if (fecha !== undefined) venta.fecha = fecha;
     if (numero_orden !== undefined) venta.numero_orden = numero_orden;
 
-    // Evitar duplicado por numero_orden
+    //  Verificar duplicado por numero_orden si cambia
     if (venta.numero_orden) {
       const existe = await Venta.findOne({ where: { numero_orden: venta.numero_orden } });
       if (existe && existe.id !== venta.id) {
@@ -125,13 +125,13 @@ exports.updateVenta = async (req, res) => {
   }
 };
 
-// ------------------- DELETE /ventas/:id -------------------
+// Elimina una venta
 exports.deleteVenta = async (req, res) => {
   try {
     const venta = await Venta.findByPk(req.params.id);
     if (!venta) return res.status(404).json({ message: 'Venta no encontrada.' });
 
-    // Borrar detalles primero
+    // Eliminar detalles asociados primero
     await DetalleVenta.destroy({ where: { venta_id: venta.id } });
     await venta.destroy();
 

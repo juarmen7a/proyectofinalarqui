@@ -1,14 +1,13 @@
-'use strict';
-
 const Almacen = require('../models/almacenes.model');
 
-// Modelos opcionales para validar FKs y bloquear borrado
+// Modelos relacionados
 let Sucursal = null, Compra = null, MovInv = null, Inventario = null;
 try { Sucursal   = require('../models/sucursales.model'); }                catch (_) {}
-try { Compra     = require('../models/compras.model'); }                   catch (_) {} // compra_producto
+try { Compra     = require('../models/compras.model'); }                   catch (_) {} 
 try { MovInv     = require('../models/movimientos_inventario.model'); }   catch (_) {}
 try { Inventario = require('../models/inventario.model'); }               catch (_) {}
 
+//Obtiene todo los almacenes
 exports.getAlmacenes = async (_req, res) => {
   try {
     const rows = await Almacen.findAll();
@@ -18,6 +17,7 @@ exports.getAlmacenes = async (_req, res) => {
   }
 };
 
+// Obtiene un almacén por ID
 exports.getAlmacenById = async (req, res) => {
   try {
     const row = await Almacen.findByPk(req.params.id);
@@ -28,25 +28,28 @@ exports.getAlmacenById = async (req, res) => {
   }
 };
 
+// Crea un nuevo almacén
 exports.createAlmacen = async (req, res) => {
   try {
     const { sucursal_id, nombre, activo } = req.body;
-
+    // Validaciones
     if (!sucursal_id || !nombre) {
-      return res.status(400).json({ message: 'sucursal_id y nombre son requeridos' });
+      return res.status(400).json({ message: 'Sucursal_id y nombre son requeridos' });
     }
-
+    // Verifica si la sucursal existe
     if (Sucursal) {
       const suc = await Sucursal.findByPk(sucursal_id);
       if (!suc) return res.status(404).json({ message: `Sucursal ${sucursal_id} no existe` });
     }
 
+    // Verifica duplicados
     const dup = await Almacen.findOne({ where: { sucursal_id, nombre } });
     if (dup) return res.status(409).json({ message: `El almacén "${nombre}" ya existe en la sucursal ${sucursal_id}` });
-
+    // Crear almacén 
     const row = await Almacen.create({ sucursal_id, nombre, activo });
     res.status(201).json({ message: 'Almacén creado correctamente', data: row });
   } catch (error) {
+    // Manejo de error para índice único
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(409).json({ message: 'El almacén ya existe (índice único)' });
     }
@@ -54,6 +57,7 @@ exports.createAlmacen = async (req, res) => {
   }
 };
 
+// Actualiza un almacén existente
 exports.updateAlmacen = async (req, res) => {
   try {
     const row = await Almacen.findByPk(req.params.id);
@@ -84,12 +88,13 @@ exports.updateAlmacen = async (req, res) => {
   }
 };
 
+// Elimina un almacén
 exports.deleteAlmacen = async (req, res) => {
   try {
     const row = await Almacen.findByPk(req.params.id);
     if (!row) return res.status(404).json({ message: 'Almacén no encontrado' });
 
-    // Bloqueos por uso en otras tablas
+    // Validar relaciones para evitar borrado si hay dependencias
     if (Compra) {
       const n = await Compra.count({ where: { almacen_id: row.id } });
       if (n > 0) return res.status(409).json({ message: `No se puede eliminar: hay ${n} compra(s) registradas en este almacén` });
@@ -102,7 +107,6 @@ exports.deleteAlmacen = async (req, res) => {
       const i = await Inventario.count({ where: { almacen_id: row.id } });
       if (i > 0) return res.status(409).json({ message: `No se puede eliminar: existen ${i} registro(s) en inventario` });
     }
-
     const nombre = row.nombre;
     await row.destroy();
     const restantes = await Almacen.count({ where: { sucursal_id: row.sucursal_id } });

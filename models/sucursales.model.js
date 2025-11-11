@@ -1,6 +1,8 @@
+//sucursales.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Sucursal, para gestionar las sucursales de una empresa
 const Sucursal = db.define('Sucursal', {
   empresa_id: {
     type: DataTypes.BIGINT,

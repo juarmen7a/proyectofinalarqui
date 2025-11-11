@@ -1,6 +1,8 @@
+//usuarios.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Usuario, para gestionar los usuarios del sistema
 const Usuario = db.define('Usuario', {
   sucursal_id: {
     type: DataTypes.BIGINT

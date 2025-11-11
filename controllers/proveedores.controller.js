@@ -1,12 +1,12 @@
-'use strict';
-
+// controllers/proveedores.controller.js
 const Proveedor = require('../models/proveedores.model');
 
-// Validaciones opcionales de FK/uso (no fallan si el modelo no existe)
+// Dependencias opcionales
 let Empresa = null, CompraProducto = null;
 try { Empresa = require('../models/empresas.model'); } catch (_) {}
 try { CompraProducto = require('../models/compra_producto.model'); } catch (_) {}
 
+// Busca todos los proveedores
 exports.getProveedores = async (_req, res) => {
   try {
     const rows = await Proveedor.findAll();
@@ -16,6 +16,7 @@ exports.getProveedores = async (_req, res) => {
   }
 };
 
+// Busca un proveedor por ID
 exports.getProveedorById = async (req, res) => {
   try {
     const row = await Proveedor.findByPk(req.params.id);
@@ -26,6 +27,7 @@ exports.getProveedorById = async (req, res) => {
   }
 };
 
+//  Crea un nuevo proveedor
 exports.createProveedor = async (req, res) => {
   try {
     const { empresa_id, nombre, nit, telefono, correo, direccion, activo } = req.body;
@@ -39,7 +41,7 @@ exports.createProveedor = async (req, res) => {
       if (!emp) return res.status(404).json({ message: `Empresa ${empresa_id} no existe` });
     }
 
-    // existentes
+    // Verifica duplicados
     const dupNombre = await Proveedor.findOne({ where: { nombre } });
     if (dupNombre) return res.status(409).json({ message: `El proveedor "${nombre}" ya existe` });
 
@@ -57,6 +59,7 @@ exports.createProveedor = async (req, res) => {
   }
 };
 
+// Actualiza un proveedor existente
 exports.updateProveedor = async (req, res) => {
   try {
     const row = await Proveedor.findByPk(req.params.id);
@@ -94,13 +97,14 @@ exports.updateProveedor = async (req, res) => {
   }
 };
 
+// Elimina un proveedor
 exports.deleteProveedor = async (req, res) => {
   try {
     const { id } = req.params;
     const row = await Proveedor.findByPk(id);
     if (!row) return res.status(404).json({ message: 'Proveedor no encontrado' });
 
-    // Bloquear borrado si está referenciado en compras
+    // Verifica referencias en compras de productos
     if (CompraProducto) {
       const ref = await CompraProducto.count({ where: { proveedor_id: id } });
       if (ref > 0) {

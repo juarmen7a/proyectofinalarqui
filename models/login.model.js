@@ -1,6 +1,8 @@
+// models/login.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Login, para gestionar tokens de sesión
 const Login = db.define('login', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   usuario_id: { type: DataTypes.INTEGER, allowNull: false },

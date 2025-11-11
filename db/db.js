@@ -1,6 +1,8 @@
+// db/db.js
 const { Sequelize } = require('sequelize')
 require('dotenv').config()
 
+//Configuración de Sequelize
 let sequelize
 
 //Variables de entorno para Railway

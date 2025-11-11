@@ -1,12 +1,8 @@
-'use strict';
-
+// models/compras.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
-/**
- * Tabla física: compra_producto (según tu esquema)
- * subtotal y total son columnas GENERADAS en la BD → no se envían desde la app
- */
+// Definición del modelo Compra, para registrar las compras de productos
 const Compra = db.define('compras', {
   id:               { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   almacen_id:       { type: DataTypes.INTEGER, allowNull: false },
@@ -19,8 +15,7 @@ const Compra = db.define('compras', {
   cantidad:         { type: DataTypes.DECIMAL(18,4), allowNull: false },
   precio_unitario:  { type: DataTypes.DECIMAL(18,4), allowNull: false },
 
-  // Marcamos allowNull: true para que Sequelize no valide not-null en app;
-  // MySQL las calcula y las devuelve.
+ // Campos calculados, pueden ser nulos al inicio
   subtotal: { type: DataTypes.DECIMAL(18,2), allowNull: true },
   impuesto: { type: DataTypes.DECIMAL(18,2), allowNull: false, defaultValue: 0 },
   total:    { type: DataTypes.DECIMAL(18,2), allowNull: true },
@@ -29,6 +24,7 @@ const Compra = db.define('compras', {
 }, {
   tableName: 'compra_producto',
   timestamps: false,
+  // Índice único para evitar duplicados por proveedor y documento
   indexes: [
     { unique: true, fields: ['proveedor_id', 'documento_tipo', 'documento_numero'] }
   ]

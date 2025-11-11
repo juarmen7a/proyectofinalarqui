@@ -1,11 +1,8 @@
-'use strict';
-
+// models/inventario.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
-/**
- * Clave lógica: (almacen_id, producto_id) única.
- */
+// Definición del modelo Inventario
 const Inventario = db.define('inventario', {
   id:           { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   almacen_id:   { type: DataTypes.INTEGER, allowNull: false },
@@ -14,6 +11,7 @@ const Inventario = db.define('inventario', {
 }, {
   tableName: 'inventario',
   timestamps: false,
+  // Índice único para evitar duplicados por almacen_id y producto_id
   indexes: [
     { unique: true, fields: ['almacen_id', 'producto_id'] }
   ]

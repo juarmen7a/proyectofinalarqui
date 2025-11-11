@@ -1,6 +1,8 @@
+//productos.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo Producto
 const Producto = db.define('productos', {
   id: { 
     type: DataTypes.INTEGER, 

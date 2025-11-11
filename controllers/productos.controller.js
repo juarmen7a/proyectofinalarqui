@@ -1,7 +1,7 @@
-'use strict';
-
+// controllers/productos.controller.js
 const Producto = require('../models/productos.model');
 
+// Obtiene todos los productos
 exports.getProductos = async (req, res) => {
   try {
     const productos = await Producto.findAll();
@@ -11,6 +11,7 @@ exports.getProductos = async (req, res) => {
   }
 };
 
+// Obtiene un producto por ID
 exports.getProductoById = async (req, res) => {
   try {
     const producto = await Producto.findByPk(req.params.id);
@@ -23,6 +24,7 @@ exports.getProductoById = async (req, res) => {
   }
 };
 
+// Crea un nuevo producto
 exports.createProducto = async (req, res) => {
   try {
     const { empresa_id, categoria_id, unidad_id, tipo, codigo, nombre, descripcion, activo } = req.body;
@@ -33,7 +35,7 @@ exports.createProducto = async (req, res) => {
       });
     }
 
-    // Verifica si el producto ya existe
+    // Verificar código único dentro de la empresa
     const existente = await Producto.findOne({ where: { empresa_id, codigo } });
     if (existente) {
       return res.status(409).json({
@@ -57,6 +59,7 @@ exports.createProducto = async (req, res) => {
   }
 };
 
+// Actualiza un producto existente
 exports.updateProducto = async (req, res) => {
   try {
     const producto = await Producto.findByPk(req.params.id);
@@ -84,6 +87,7 @@ exports.updateProducto = async (req, res) => {
   }
 };
 
+// Elimina un producto
 exports.deleteProducto = async (req, res) => {
   try {
     const producto = await Producto.findByPk(req.params.id);

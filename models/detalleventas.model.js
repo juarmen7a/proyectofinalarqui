@@ -1,8 +1,8 @@
-'use strict';
-
+// models/detalleventas.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db');
 
+// Definición del modelo DetalleVenta, para registrar los detalles de cada venta
 const DetalleVenta = db.define('DetalleVenta', {
   id: {
     type: DataTypes.INTEGER,

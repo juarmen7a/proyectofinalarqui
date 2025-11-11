@@ -1,8 +1,8 @@
-'use strict';
-
+// controllers/unidades.controller.js
 const Unidad = require('../models/unidades.model');
 const Producto = require('../models/productos.model');
 
+// Obtiene todas las unidades
 exports.getUnidades = async (req, res) => {
   try {
     const unidades = await Unidad.findAll();
@@ -12,6 +12,7 @@ exports.getUnidades = async (req, res) => {
   }
 };
 
+// Obtiene una unidad por ID
 exports.getUnidadById = async (req, res) => {
   try {
     const unidad = await Unidad.findByPk(req.params.id);
@@ -22,6 +23,7 @@ exports.getUnidadById = async (req, res) => {
   }
 };
 
+// Crea una nueva unidad
 exports.createUnidad = async (req, res) => {
   try {
     const { codigo, nombre } = req.body;
@@ -41,6 +43,7 @@ exports.createUnidad = async (req, res) => {
   }
 };
 
+//  Actualiza una unidad existente
 exports.updateUnidad = async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,6 +61,7 @@ exports.updateUnidad = async (req, res) => {
   }
 };
 
+// Elimina una unidad
 exports.deleteUnidad = async (req, res) => {
   try {
     const { id } = req.params;

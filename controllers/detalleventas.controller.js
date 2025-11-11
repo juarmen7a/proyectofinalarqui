@@ -1,10 +1,10 @@
-'use strict';
-
+// controllers/detalleventas.controller.js
 const DetalleVenta = require('../models/detalleventas.model');
 const Venta = require('../models/ventas.model');
 let Producto = null;
 try { Producto = require('../models/productos.model'); } catch {}
 
+// Busca todos los detalles de venta
 exports.getDetalleVentas = async (_req, res) => {
   try {
     const rows = await DetalleVenta.findAll();
@@ -14,6 +14,7 @@ exports.getDetalleVentas = async (_req, res) => {
   }
 };
 
+// Busca un detalle de venta por ID
 exports.getDetalleVentaById = async (req, res) => {
   try {
     const row = await DetalleVenta.findByPk(req.params.id);
@@ -24,6 +25,7 @@ exports.getDetalleVentaById = async (req, res) => {
   }
 };
 
+// Busca todos los detalles de venta por ID de venta
 exports.getDetallesByVenta = async (req, res) => {
   try {
     const venta_id = req.params.venta_id;
@@ -34,6 +36,7 @@ exports.getDetallesByVenta = async (req, res) => {
   }
 };
 
+// Crea un nuevo detalle de venta
 exports.createDetalleVenta = async (req, res) => {
   try {
     const { venta_id, producto_id, cantidad, precio_unitario, estilo_coccion } = req.body;
@@ -65,6 +68,7 @@ exports.createDetalleVenta = async (req, res) => {
   }
 };
 
+// Actualiza un detalle de venta existente
 exports.updateDetalleVenta = async (req, res) => {
   try {
     const row = await DetalleVenta.findByPk(req.params.id);
@@ -91,6 +95,7 @@ exports.updateDetalleVenta = async (req, res) => {
   }
 };
 
+// Elimina un detalle de venta
 exports.deleteDetalleVenta = async (req, res) => {
   try {
     const row = await DetalleVenta.findByPk(req.params.id);

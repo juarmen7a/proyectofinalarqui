@@ -1,10 +1,9 @@
-'use strict';
-
+// controllers/inventario.controller.js
 const Inventario = require('../models/inventario.model');
 const Almacen = require('../models/almacenes.model');
 const Producto = require('../models/productos.model');
 
-// ------------------- OBTENER TODOS -------------------
+// Obtiene todos los inventarios
 exports.getInventarios = async (req, res) => {
   try {
     const inventarios = await Inventario.findAll();
@@ -20,7 +19,7 @@ exports.getInventarios = async (req, res) => {
   }
 };
 
-// ------------------- OBTENER POR ID -------------------
+//Obtiene un inventario por ID
 exports.getInventarioById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -37,17 +36,17 @@ exports.getInventarioById = async (req, res) => {
   }
 };
 
-// ------------------- CREAR INVENTARIO -------------------
+// Crea un nuevo inventario
 exports.createInventario = async (req, res) => {
   try {
     const { almacen_id, producto_id, cantidad = 0 } = req.body;
 
     if (!almacen_id || !producto_id) {
       return res.status(400).json({
-        message: 'almacen_id y producto_id son requeridos.'
+        message: 'Almacen_id y producto_id son requeridos.'
       });
     }
-
+    // Validar cantidad no negativa
     if (cantidad < 0) {
       return res.status(400).json({
         message: 'La cantidad no puede ser negativa.'
@@ -80,7 +79,7 @@ exports.createInventario = async (req, res) => {
         message: `Ya existe un inventario para el producto ${producto_id} en el almacén ${almacen_id}.`
       });
     }
-
+    // Crear inventario
     const nuevoInventario = await Inventario.create({
       almacen_id,
       producto_id,
@@ -107,7 +106,7 @@ exports.createInventario = async (req, res) => {
   }
 };
 
-// ------------------- ACTUALIZAR INVENTARIO -------------------
+// Actualiza un inventario existente
 exports.updateInventario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -133,7 +132,7 @@ exports.updateInventario = async (req, res) => {
   }
 };
 
-// ------------------- ELIMINAR INVENTARIO -------------------
+// Elimina un inventario
 exports.deleteInventario = async (req, res) => {
   try {
     const { id } = req.params;

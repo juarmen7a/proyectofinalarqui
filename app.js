@@ -1,6 +1,8 @@
+// app.js
 const express = require('express');
 require('dotenv').config();
 
+// Configuración de la base de datos
 const sequelize = require('./db/db');
 
 // Importar rutas
@@ -21,10 +23,11 @@ const proveedoresRoutes = require('./routes/proveedores.routes');
 const comprasRoutes = require('./routes/compras.routes');
 const loginRoutes = require('./routes/login.routes');
 
+// Configuración de Express
 const app = express();
 app.use(express.json());
 
-// Maquetar rutas
+// Usar/Maquetar las rutas
 app.use('/api', empresasRoutes);
 app.use('/api', sucursalesRoutes);
 app.use('/api', usuariosRoutes);
@@ -46,14 +49,14 @@ app.use('/api', loginRoutes);
 
 // Ruta principal para comprobar el servidor
 app.get('/', (req, res) => {
-  res.send('✅ API BD_Pollo funcionando correctamente');
+  res.send('BD_Pollo API 🐔 : Conexión y Servicios Operativos.');
 });
 
 // Iniciar servidor y conectar DB
 sequelize.sync().then(() => {
   app.listen(3000, () => {
-    console.log('Servidor iniciado en http://localhost:3000');
-    console.log('Base de datos conectada correctamente');
+    console.log('Servidor ejecutándose en: http://localhost:3000, y en Railway http://proyecto-pollos.up.railway.app');
+    console.log('Base de datos sincronizada y lista para operaciones.');
   });
 }).catch(err => {
   console.error('Error al conectar la base de datos:', err);

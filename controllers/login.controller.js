@@ -1,17 +1,21 @@
-'use strict';
-
+// controllers/login.controller.js
 const jwt = require('jsonwebtoken');
 const Login = require('../models/login.model');
 const usuarios = require('../models/usuarios.model');
+
+//  Cargar variables de entorno
 require('dotenv').config();
 
+// Configuración JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
 const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 
+// Funciones auxiliares
 const now = () => new Date();
 const inMs = (ms) => new Date(Date.now() + ms);
 
+// Obtiene todas las sesiones (login)
 exports.getSesiones = async (_req, res) => {
   try {
     const sesiones = await Login.findAll();
@@ -21,6 +25,7 @@ exports.getSesiones = async (_req, res) => {
   }
 };
 
+// Obtiene una sesión por ID
 exports.getSesionById = async (req, res) => {
   try {
     const sesion = await Login.findByPk(req.params.id);
@@ -31,6 +36,7 @@ exports.getSesionById = async (req, res) => {
   }
 };
 
+// Crea una nueva sesión (login)
 exports.createSesion = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,13 +44,13 @@ exports.createSesion = async (req, res) => {
       return res.status(400).json({ message: 'Debe ingresar email y contraseña' });
     }
 
-    // Buscar usuario
+    // Buscar usuario por correo
     const usuario = await usuarios.findOne({ where: { correo: email } });
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar si ya tiene sesión activa
+   // Verificar si ya hay una sesión activa para el usuario
     const sesionActiva = await Login.findOne({ where: { usuario_id: usuario.id } });
     if (sesionActiva) {
       return res.status(409).json({
@@ -52,12 +58,12 @@ exports.createSesion = async (req, res) => {
       });
     }
 
-    // Validar estado (si existe)
+    // Verificar si el usuario está activo
     if (usuario.activo !== undefined && usuario.activo === 0) {
       return res.status(403).json({ message: 'Usuario inactivo' });
     }
 
-    // Validar contraseña (sin encriptar)
+    // Verificar contraseña (en un entorno real, usar hashing)
     if (String(usuario.contrasena) !== String(password)) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
@@ -66,7 +72,7 @@ exports.createSesion = async (req, res) => {
     const payload = { id: usuario.id, nombre: usuario.nombre_completo, email: usuario.correo };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Guardar sesión
+   // Crear registro de sesión
     const sesion = await Login.create({
       usuario_id: usuario.id,
       token_hash: token,
@@ -75,7 +81,7 @@ exports.createSesion = async (req, res) => {
     });
 
     res.status(201).json({
-      message: `Inicio de sesión exitoso, bienvenido ${usuario.nombre_completo}`,
+      message: `Inicio de sesión exitoso, Bienvenido ${usuario.nombre_completo}`,
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre_completo,
@@ -90,6 +96,7 @@ exports.createSesion = async (req, res) => {
   }
 };
 
+// Cierra una sesión (logout)
 exports.logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -105,6 +112,7 @@ exports.logout = async (req, res) => {
   }
 };
 
+// Verifica validez del token
 exports.verificarToken = async (req, res) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return res.status(400).json({ message: 'Debe enviar un token válido' });

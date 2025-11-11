@@ -1,6 +1,8 @@
+//sucursales.model.js
 const { DataTypes } = require('sequelize');
 const db = require('../db/db'); 
 
+// Definición del modelo Unidad, para gestionar las unidades de medida
 const Unidad = db.define('unidades', {
   id: {
     type: DataTypes.INTEGER,

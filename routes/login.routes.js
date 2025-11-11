@@ -1,7 +1,9 @@
+//routes/login.routes.js
 const express = require('express');
 const router = express.Router();
 const login = require('../controllers/login.controller');
 
+// Rutas para la gestión de login y sesiones
 router.post('/login', login.createSesion);
 router.get('/sesiones', login.getSesiones);
 router.get('/sesiones/:id', login.getSesionById);

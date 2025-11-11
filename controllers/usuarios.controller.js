@@ -1,10 +1,13 @@
+// controllers/usuarios.controller.js
 const Usuario = require('../models/usuarios.model');
 
+// Obtiene todos los usuarios
 exports.getUsuarios = async (req, res) => {
   try { res.json(await Usuario.findAll()); }
   catch (error) { res.status(500).json({ error, message: 'Error al obtener usuarios' }); }
 };
 
+// Obtiene un usuario por ID
 exports.getUsuarioById = async (req, res) => {
   try {
     const row = await Usuario.findByPk(req.params.id);
@@ -15,6 +18,7 @@ exports.getUsuarioById = async (req, res) => {
   }
 };
 
+// Crea un nuevo usuario
 exports.createUsuario = async (req, res) => {
   try {
     const { sucursal_id, nombre_completo, correo, contrasena, activo } = req.body;
@@ -25,6 +29,7 @@ exports.createUsuario = async (req, res) => {
   }
 };
 
+// Actualiza un usuario existente
 exports.updateUsuario = async (req, res) => {
   try {
     const row = await Usuario.findByPk(req.params.id);
@@ -42,6 +47,8 @@ exports.updateUsuario = async (req, res) => {
   }
 };
 
+
+// Elimina un usuario
 exports.deleteUsuario = async (req, res) => {
   try {
     const row = await Usuario.findByPk(req.params.id);
