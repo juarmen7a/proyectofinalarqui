@@ -46,12 +46,12 @@ exports.createProducto = async (req, res) => {
     });
 
     res.status(201).json({
-      message: '✅ Producto creado exitosamente.',
+      message: 'Producto creado exitosamente.',
       data: nuevo
     });
   } catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({ message: '⚠️ Ya existe un producto con ese código.' });
+      return res.status(409).json({ message: 'Ya existe un producto con ese código.' });
     }
     res.status(500).json({ message: 'Error al crear el producto', error: error.message });
   }
@@ -70,7 +70,7 @@ exports.updateProducto = async (req, res) => {
     const duplicado = await Producto.findOne({ where: { empresa_id, codigo } });
     if (duplicado && duplicado.id !== producto.id) {
       return res.status(409).json({
-        message: `⚠️ Ya existe otro producto con el código "${codigo}" en la empresa ${empresa_id}.`
+        message: ` Ya existe otro producto con el código "${codigo}" en la empresa ${empresa_id}.`
       });
     }
 
@@ -78,7 +78,7 @@ exports.updateProducto = async (req, res) => {
       empresa_id, categoria_id, unidad_id, tipo, codigo, nombre, descripcion, activo
     });
 
-    res.json({ message: '✅ Producto actualizado correctamente.', data: producto });
+    res.json({ message: 'Producto actualizado correctamente.', data: producto });
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar producto', error: error.message });
   }
@@ -96,7 +96,7 @@ exports.deleteProducto = async (req, res) => {
     const restantes = await Producto.count();
 
     res.json({
-      message: `🗑️ Producto "${nombre}" eliminado correctamente.`,
+      message: `Producto "${nombre}" eliminado correctamente.`,
       productos_restantes: restantes
     });
   } catch (error) {

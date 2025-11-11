@@ -14,7 +14,7 @@ if (process.env.DATABASE_URL || process.env.MYSQL_URL) {
 } else {
   //Modo local
   sequelize = new Sequelize(
-    process.env.DB_NAME || 'db_pollo',
+    process.env.DB_NAME || 'bd_pollo',
     process.env.DB_USER || 'root',
     process.env.DB_PASS || '',
     {
